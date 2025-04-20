@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>Habit tracker</title>
+</head>
+
+<body class="bg-rose-100">
+
+  <form class="flex items-center  gap-4 m-6 p-6 bg-white rounded-2xl shadow-md">
+    <label>Title</label>
+    <input type="text" name="title" class="title border border-gray-300 shadow-sm p-2">
+    <label>Date</label>
+    <input type="date" name="date" class="date border border-gray-300 shadow-sm p-2">
+    <label>Status</label>
+    <select name="status" class="selectStatus border border-gray-300 shadow-sm p-2">
+      <option value="pending">pending</option>
+    </select>
+    <button type="submit" class=" bg-violet-400 text-white py-2 px-4 rounded-xl hover:bg-blue-700 cursor-pointer">Create</button>
+  </form>
+  <div>
+    <h2 class="text-2xl font-semibold text-gray-600 p-4">Daily Habit tracker</h2>
+    <div class="habit-container flex flex-col item-center gap-6 m-6 p-6 bg-white rounded-2xl shadow-md"></div>
+  </div>
+  <template class="template">
+    <div class="flex items-center w-full gap-15 bg-violet-100 p-3">
+      <input type="text" class="titleEl">
+      <input type="text" class="dateEl">
+      <select class="selectStatusEl">
+        <option value="statusOptionsEl"></option>
+      </select>
+      <div class="px-5 flex items-center gap-3">
+        <button class="bg-pink-300 text-white py-2 px-4 rounded-xl hover:bg-blue-700 cursor-pointer">Update</button>
+        <button class="bg-rose-300 text-white py-2 px-4 rounded-xl hover:bg-blue-700 cursor-pointer">Delete</button>
+      </div>
+    </div>
+  </template>
+  <script>
+    const baseUrl = 'http://localhost:3000/api';
+
+    async function fetchHabit() {
+      try {
+        const res = await fetch(`${baseUrl}/habit`);
+        const data = await res.json();
+        renderHabit(data);
+      } catch (error) {
+        consoel.log('Unable to fetch data', error);
+      }
+    };
+
+    function renderHabit(habits) {
+      const habitContainer = document.querySelector('.habit-container');
+      const template = document.querySelector('.template');
+      habits.forEach((habit) => {
+        const clone = template.content.cloneNode(true);
+        clone.querySelector('.titleEl').value = habit.title;
+        clone.querySelector('.dateEl').value = habit.date;
+        clone.querySelector('.selectStatusEl').value = habit.status;
+        habitContainer.appendChild(clone);
+      });
+    }
+
+    async function createHabit(data) {
+      try {
+        const res = await fetch(`${baseUrl}/habit`, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+      } catch (error) {
+        console.log('Unable to create habit', error);
+      }
+    }
+
+    const form = document.querySelector('form').addEventListener('submit', () => {
+      const title = document.querySelector('.title').value;
+      const date = document.querySelector('.date').value;
+      const status = document.querySelector('.selectStatus').value;
+
+      const data = {
+        title,
+        date,
+        status
+      }
+      createHabit(data);
+      fetchHabit();
+      form.clear();
+    });
+
+    fetchHabit();
+  </script>
+</body>
+
+</html>
